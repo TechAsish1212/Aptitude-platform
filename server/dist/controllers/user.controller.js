@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signUp = void 0;
+exports.signIn = exports.signUp = void 0;
 const User_model_1 = require("../models/User.model");
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -47,4 +47,20 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.signUp = signUp;
+const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+        const existingUser = yield User_model_1.User.findOne({ email });
+        if (!existingUser) {
+            return res.status(404).json({ success: false, message: "User not exists , go to signup" });
+        }
+        const passwordValid = yield existingUser.isPasswordCorrect(password);
+    }
+    catch (error) {
+    }
+});
+exports.signIn = signIn;
 //# sourceMappingURL=user.controller.js.map

@@ -1,4 +1,4 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { Document, model, Schema } from "mongoose";
 import bcrypt from 'bcryptjs'
 
 export interface IUser {
@@ -13,6 +13,11 @@ export interface IUser {
     };
     role: "student" | "admin";
     createdAt: Date;
+}
+
+// Create a new interface that extends Document and includes the method
+export interface IUserDocument extends Document, IUser {
+    isPasswordCorrect(password: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<IUser>({
@@ -61,10 +66,10 @@ userSchema.pre('save', async function (next: any) {
     this.password = await bcrypt.hash(this.password, salt);
 })
 
-userSchema.methods.isPasswordCorrect = async function (password: any) {
+userSchema.methods.isPasswordCorrect = async function (password: string):Promise<boolean> {
     return await bcrypt.compare(password, this.password);
 }
 
-const User = model<IUser>('User', userSchema);
+const User = model<IUserDocument>('User', userSchema);
 
 export { User }

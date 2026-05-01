@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 export interface IUser {
     name: string;
     email: string;
@@ -11,6 +11,9 @@ export interface IUser {
     };
     role: "student" | "admin";
     createdAt: Date;
+}
+export interface IUserDocument extends Document, IUser {
+    isPasswordCorrect(password: string): Promise<boolean>;
 }
 declare const User: mongoose.Model<IUser, {}, {}, {}, mongoose.Document<unknown, {}, IUser, {}, mongoose.DefaultSchemaOptions> & IUser & {
     _id: mongoose.Types.ObjectId;
