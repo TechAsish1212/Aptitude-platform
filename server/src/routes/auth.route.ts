@@ -1,10 +1,12 @@
 import {Router} from "express"
-import { signIn, signUp } from "../controllers/user.controller";
+import { resendOtp, signIn, signUp, verifyOtp } from "../controllers/user.controller";
 
 
 const authRouter=Router();
 
 authRouter.post('/signup',signUp);
+authRouter.post('/verify-otp',verifyOtp);
+authRouter.post('/resend-otp',resendOtp);
 authRouter.post('/signin',signIn);
 
 export default authRouter;
