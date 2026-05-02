@@ -232,15 +232,28 @@ export const signIn = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: "User not exists , go to signup" });
         }
 
+        // verified or not
+        if(!existingUser.isEmailVerified){
+            return res.status(400).json({
+                success:false,
+                message:"Verify your email first.OTP has been sent to your email",
+            })
+        }
+
+
         const passwordValid = await existingUser.isPasswordCorrect(password);
 
         if (!passwordValid) {
             return res.status(400).json({ success: false, message: "Invalid password" });
         }
 
+        // gen jwt token 
+        const token=generateToken(existingUser._id.toString(),existingUser.email,existingUser.role);
+
         return res.status(200).json({
             success: true,
             message: "Login successful",
+            token,
             data: {
                 id: existingUser._id,
                 name: existingUser.name,
