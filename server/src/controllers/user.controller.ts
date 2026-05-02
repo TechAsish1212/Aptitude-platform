@@ -3,6 +3,7 @@ import { User } from '../models/User.model';
 import otpGenerator from "otp-generator";
 import { sendEmail } from '../utils/email.service';
 import { generateToken } from '../utils/jwt';
+import jwt from 'jsonwebtoken';
 
 
 export const signUp = async (req: Request, res: Response) => {
@@ -129,6 +130,15 @@ export const verifyOtp = async (req: Request, res: Response) => {
         // gen jwt token
         const token = generateToken(user._id.toString(), user.email, user.role);
 
+        // Set cookie for persistent login
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+
         return res.status(200).json({
             success: true,
             message: "Email verified successfully",
@@ -233,10 +243,10 @@ export const signIn = async (req: Request, res: Response) => {
         }
 
         // verified or not
-        if(!existingUser.isEmailVerified){
+        if (!existingUser.isEmailVerified) {
             return res.status(400).json({
-                success:false,
-                message:"Verify your email first.OTP has been sent to your email",
+                success: false,
+                message: "Verify your email first.OTP has been sent to your email",
             })
         }
 
@@ -248,7 +258,16 @@ export const signIn = async (req: Request, res: Response) => {
         }
 
         // gen jwt token 
-        const token=generateToken(existingUser._id.toString(),existingUser.email,existingUser.role);
+        const token = generateToken(existingUser._id.toString(), existingUser.email, existingUser.role);
+
+        // Set cookie for persistent login
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
 
         return res.status(200).json({
             success: true,
@@ -268,6 +287,28 @@ export const signIn = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: error.message
+        });
+    }
+}
+
+export const signOut = async (req: Request, res: Response) => {
+    try {
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV == 'production',
+            sameSite: 'strict'
+        })
+
+        res.status(200).json({
+            success: true,
+            message: "signout successfully"
+        })
+
+    } catch (error: any) {
+        console.error('Signout error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || "Internal server error"
         });
     }
 }
