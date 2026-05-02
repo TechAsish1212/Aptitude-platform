@@ -71,7 +71,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
 }
 
-// Verify reset token
 export const verifyResetToken = async (req: Request, res: Response) => {
     try {
         const { token, email } = req.query;
@@ -120,7 +119,6 @@ export const verifyResetToken = async (req: Request, res: Response) => {
     }
 };
 
-// Reset password
 export const resetPassword = async (req: Request, res: Response) => {
     try {
         const { token, email, newPassword, confirmPassword } = req.body;
