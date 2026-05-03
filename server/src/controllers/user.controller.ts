@@ -312,3 +312,53 @@ export const signOut = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const getProfile = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "Unauthorized access.User identification failed."
+            })
+        }
+
+        const user = await User.findById(userId).select('-password -otp -otpExpiry -resetPasswordToken -resetPasswordExpiry').lean();
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User profile not found."
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Profile retrieved successfully',
+            data: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                stats: {
+                    totalQuizzesTaken: user.stats.totalQuizzesTaken,
+                    averageScore: user.stats.averageScore,
+                    totalQuestionsAttempted: user.stats.totalQuestionsAttempted,
+                    correctAnswers: user.stats.correctAnswers
+                },
+                createdAt: user.createdAt,
+                isEmailVerified: user.isEmailVerified
+            }
+        });
+
+    } catch (error) {
+        console.error('Get profile error:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch profile. Please try again later.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+}
